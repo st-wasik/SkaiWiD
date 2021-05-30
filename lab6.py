@@ -15,7 +15,7 @@ def pad_matrix(mx, shape):
         pad_mx = np.zeros(mx.shape[0] * cols_to_add).reshape(mx.shape[0], cols_to_add)
         mx = np.concatenate([mx, pad_mx], axis=1)
     
-    return mx
+    return mx[:shape[0], :shape[1]]
 
 def custom_svd(X):
     C = X.T @ X
@@ -27,7 +27,7 @@ def custom_svd(X):
 
     s_plus = np.diag(s)
     s_plus = pad_matrix(s_plus, X.shape).T
-    s_plus = np.divide(1, s_plus, where=~np.isclose(s_plus, 0.0))
+    s_plus = np.divide(1, s_plus, where=~np.isclose(s_plus, 0.0, rtol=1e-10))
 
     u = X @ v @ s_plus
     return u, s, v.T
@@ -40,9 +40,8 @@ def svd_2dim_array(image_array, svd_fun, k):
     u, s, vh = svd_fun(image_array)
 
     diag = np.diag(s)
-    size = u.shape[1], vh.shape[0]
-    diag = pad_matrix(diag, size)
-    print(image_array.shape," -> ", u.shape, "@", diag.shape, "@", vh.shape)
+    diag = pad_matrix(diag, image_array.shape)
+    # print(image_array.shape," -> ", u.shape, "@", diag.shape, "@", vh.shape)
 
     if k is None: 
         result = u @ diag @ vh
